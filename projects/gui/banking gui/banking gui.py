@@ -43,9 +43,6 @@ def register():
     toggle_check.grid(row=3, sticky=E)
     Button(register_window, text="Register", command=finish_regis, font=("Calibri", 12)).grid(row=4, sticky=N, pady=10)
 
-
-
-
 def finish_regis():
     pass
 
