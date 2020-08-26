@@ -5,6 +5,8 @@ from PIL import ImageTk, Image
 
 master = Tk()
 master.title("Banking App")
+master.geometry("250x330")
+master.resizable(0, 0)
 
 def toggle_password():
     if check_var.get():
@@ -30,7 +32,6 @@ def register():
     password_label.grid(row=2, sticky=W)
     age_label = Label(register_window, text="Age :", font=("Calibri", 12))
     age_label.grid(row=3, sticky=W)
-
 
     global password_entry
     global toggle_check
@@ -67,20 +68,94 @@ def finish_regis():
             new_file.write(name + "\n")
             new_file.write(password + "\n")
             new_file.write(age + "\n")
+            new_file.write("0")
             new_file.close()
     messagebox.showinfo("Completed", "Account has been created!")
 
 def login():
+    global temp_login_username
+    global temp_login_password
+    global login_screen
+
+    temp_login_username = StringVar()
+    temp_login_password = StringVar()
+
+    login_screen = Toplevel(master)
+    login_screen.title("Login")
+
+    Label(login_screen, text="Fill all fields to login to your account", font=("Calibri", 12)).grid(row=0, sticky=N, pady=10, padx=5)
+    Label(login_screen, text="Username:", font=("Calibri", 12)).grid(row=1, sticky=W, padx=5)
+    Label(login_screen, text="Password:", font=("Calibri", 12)).grid(row=2, sticky=W, padx=5)
+
+    Entry(login_screen, textvariable=temp_login_username).grid(row=1, padx=80)
+    Entry(login_screen, textvariable=temp_login_password, show="*").grid(row=2, padx=80, pady=5)
+
+    Button(login_screen, text="Login", command=login_session, width=8, height=1, font=("Calibri", 12)).grid(row=3, sticky=N, pady=5)
+
+def login_session():
+    global login_username
+    all_accounts = os.listdir()
+    login_username = temp_login_username.get()
+    login_password = temp_login_password.get()
+
+    if temp_login_username.get() == "" or temp_login_password.get() == "":
+        messagebox.showwarning("Warning", "All fields required")
+
+    for name in all_accounts:
+        if name == login_username:
+            file = open(name, "r")
+            file_data = file.read()
+            file_data = file_data.split("\n")
+            password = file_data[1]
+            if login_password == password:
+                login_screen.destroy()
+                account_screen = Toplevel(master)
+                account_screen.title("My Account")
+
+                Label(account_screen, text="My Account", font=("Calibri", 12)).grid(row=0, sticky=N, pady=5, padx=5)
+                Label(account_screen, text="Welcome " + name, font=("Calibri", 12)).grid(row=1, sticky=N, pady=5, padx=5)
+
+                Button(account_screen, text="Personal Details", font=("Calibri", 12), width=30, command=personal_details)\
+                    .grid(row=2, sticky=N, pady = 5, padx=10)
+                Button(account_screen, text="Deposit", font=("Calibri", 12), width=30, command=deposit)\
+                    .grid(row=3, sticky=N, pady=5, padx=10)
+                Button(account_screen, text="Withdraw", font=("Calibri", 12), width=30, command=withdraw)\
+                    .grid(row=4, sticky=N, pady=5, padx=10)
+                return
+            else:
+                messagebox.showerror("Incorrect", "Incorrect username or password")
+                return
+
+def personal_details():
+    file = open(login_username, "r")
+    file_data = file.read()
+    user_details = file_data.split("\n")
+    detail_name = user_details[0]
+    detail_age = user_details[2]
+    detail_balance = user_details[3]
+
+    details_screen = Toplevel(master)
+    details_screen.title("Personal Details")
+
+    Label(details_screen, text="Personal Details", font=("Calibri", 16)).grid(row=0, sticky=N, pady=10, padx=5)
+    Label(details_screen, text="Name : " + detail_name, font=("Calibri", 12)).grid(row=1, sticky=W, pady=5, padx=5)
+    Label(details_screen, text="Age : " + detail_age, font=("Calibri", 12)).grid(row=2, sticky=W, pady=5, padx=5)
+    Label(details_screen, text="Balance : " + detail_balance, font=("Calibri", 12)).grid(row=3, sticky=W, pady=5, padx=5)
+
+def deposit():
+    pass
+
+def withdraw():
     pass
 
 img = Image.open("banking.png")
 img = img.resize((150, 150))
 img = ImageTk.PhotoImage(img)
 
-Label(master, text="Custom Banking Beta", font=("Calibri", 14)).grid(row=0, sticky=N, pady=10, padx=5)
-Label(master, text="Basic Banking App", font=("Calibri", 12)).grid(row=1, sticky=N)
-Label(master, image=img).grid(row=2, sticky=N)
+Label(master, text="Custom Banking Beta", font=("Calibri", 14)).pack(pady=5)
+Label(master, text="Basic Banking App", font=("Calibri", 12)).pack(pady=5)
+Label(master, image=img).pack(pady=5)
+Button(master, text="Register", font=("Calibri", 12), width=15, command=register).pack(pady=5)
+Button(master, text="Login",  font=("Calibri", 12), width=15, command=login).pack(pady=5)
 
-Button(master, text="Register", font=("Calibri", 12), width=15, command=register).grid(row=3, sticky=N)
-Button(master, text="Login",  font=("Calibri", 12), width=15, command=login).grid(row=4, sticky=N, pady=10)
 master.mainloop()
